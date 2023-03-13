@@ -1,0 +1,23 @@
+version: '3.4'
+
+services:
+  recall-sqldata:
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "35433:1433"
+    volumes:
+      - recall-sqldata:/var/opt/mssql
+
+
+  recall-textlist.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "35210:80"
+
+
+volumes:
+  recall-sqldata:
+    external: false
