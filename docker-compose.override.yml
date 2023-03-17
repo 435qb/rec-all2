@@ -1,6 +1,13 @@
 version: '3.4'
 
 services:
+  recall-seq:
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "35340:80"
+  
+  
   recall-sqldata:
     environment:
       - SA_PASSWORD=Pass@word
