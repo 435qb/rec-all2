@@ -9,6 +9,7 @@ using RecAll.Infrastructure.Api;
 
 namespace RecAll.Contrib.TextList.Api.Controllers;
 
+[ApiController]
 [Route("[controller]")]
 public class ItemController {
     private readonly TextListContext _textListContext;

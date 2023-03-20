@@ -1,8 +1,11 @@
 using System.Net;
 using System.Reflection;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using RecAll.Contrib.TextList.Api;
 using RecAll.Contrib.TextList.Api.Services;
 using RecAll.Infrastructure;
@@ -49,7 +52,7 @@ try {
         options.JsonSerializerOptions.IncludeFields = true);
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
-    
+
     builder.Services.AddOptions().Configure<ApiBehaviorOptions>(options => {
         options.InvalidModelStateResponseFactory = context =>
             new OkObjectResult(ServiceResult.CreateInvalidParameterResult(
@@ -58,6 +61,11 @@ try {
                             p => $"{p.Key}: {string.Join(" / ", p.Value)}"))
                 .ToServiceResultViewModel());
     });
+
+    builder.Services.AddHealthChecks()
+        .AddCheck("self", () => HealthCheckResult.Healthy()).AddSqlServer(
+            builder.Configuration["TextListContext"], name: "TextListDb-check",
+            tags: new[] { "TextListDb" });
 
     var app = builder.Build();
 
@@ -74,6 +82,15 @@ try {
     app.UseEndpoints(endpoints => {
         endpoints.MapDefaultControllerRoute();
         endpoints.MapControllers();
+        endpoints.MapHealthChecks("/hc",
+            new HealthCheckOptions {
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
+        endpoints.MapHealthChecks("/liveness",
+            new HealthCheckOptions {
+                Predicate = r => r.Name.Contains("self")
+            });
     });
 
     var textContext = app.Services.CreateScope().ServiceProvider
