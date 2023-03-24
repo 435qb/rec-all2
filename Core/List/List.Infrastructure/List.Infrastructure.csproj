@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>RecAll.Core.List.Infrastructure</AssemblyName>
+        <RootNamespace>RecAll.Core.List.Infrastructure</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\List.Domain\List.Domain.csproj" />
+    </ItemGroup>
+
+</Project>
