@@ -2,6 +2,7 @@ using System.Data;
 using System.Diagnostics;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Storage;
 using RecAll.Core.List.Domain.AggregateModels;
 using RecAll.Core.List.Infrastructure.EntityConfigurations;
@@ -92,4 +93,13 @@ public class ListContext : DbContext, IUnitOfWork {
             }
         }
     }
+}
+
+public class
+    ListContextDesignFactory : IDesignTimeDbContextFactory<ListContext> {
+    public ListContext CreateDbContext(string[] args) =>
+        new(new DbContextOptionsBuilder<ListContext>()
+            .UseSqlServer(
+                "Server=.;Initial Catalog=RecAll.ListDb;Integrated Security=true")
+            .Options);
 }
