@@ -22,6 +22,15 @@ services:
       - "host.docker.internal:host-gateway"
 
 
+  recall-list.api:
+    image: ${DOCKER_REGISTRY-}recall-list.api
+    build:
+      context: .
+      dockerfile: Core/List/List.Api/Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
   recall-envoygateway:
     image: envoyproxy/envoy:v1.11.1
     extra_hosts:

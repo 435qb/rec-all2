@@ -23,6 +23,13 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "35210:80"
+      
+      
+  recall-list.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "35200:80"
         
         
   recall-envoygateway:
