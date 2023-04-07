@@ -78,12 +78,41 @@ namespace RecAll.Core.List.Infrastructure.Migrations
                     b.ToTable("listtypes", (string)null);
                 });
 
+            modelBuilder.Entity("RecAll.Core.List.Domain.AggregateModels.SetAggregate.Set", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("TypeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TypeId");
+
+                    b.ToTable("Sets");
+                });
+
             modelBuilder.Entity("RecAll.Core.List.Domain.AggregateModels.ListAggregate.List", b =>
                 {
                     b.HasOne("RecAll.Core.List.Domain.AggregateModels.ListType", "Type")
                         .WithMany()
                         .HasForeignKey("_typeId")
                         .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Type");
+                });
+
+            modelBuilder.Entity("RecAll.Core.List.Domain.AggregateModels.SetAggregate.Set", b =>
+                {
+                    b.HasOne("RecAll.Core.List.Domain.AggregateModels.ListType", "Type")
+                        .WithMany()
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Type");

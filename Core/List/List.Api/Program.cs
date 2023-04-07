@@ -20,8 +20,8 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 Log.Logger = InitialFunctions.CreateSerilogLogger(builder.Configuration);
 
-try {
-    builder.WebHost.CaptureStartupErrors(false).ConfigureKestrel(options => {
+// try {
+    builder.WebHost.CaptureStartupErrors(true).ConfigureKestrel(options => {
         options.Listen(IPAddress.Any, 81,
             listenOptions => {
                 listenOptions.Protocols = HttpProtocols.Http2;
@@ -114,11 +114,11 @@ try {
         });
     
     app.Run();
-    return 0;
-} catch (Exception e) {
-    Log.Fatal(e, "Program terminated unexpectedly ({ApplicationContext})!",
-        InitialFunctions.AppName);
-    return 1;
-} finally {
-    Log.CloseAndFlush();
-}
+//     return 0;
+// } catch (Exception e) {
+//     Log.Fatal(e, "Program terminated unexpectedly ({ApplicationContext})!",
+//         InitialFunctions.AppName);
+//     return 1;
+// } finally {
+//     Log.CloseAndFlush();
+// }

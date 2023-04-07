@@ -51,9 +51,33 @@ namespace RecAll.Core.List.Infrastructure.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Sets",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TypeId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Sets_listtypes_TypeId",
+                        column: x => x.TypeId,
+                        principalTable: "listtypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_lists_TypeId",
                 table: "lists",
+                column: "TypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sets_TypeId",
+                table: "Sets",
                 column: "TypeId");
         }
 
@@ -62,6 +86,9 @@ namespace RecAll.Core.List.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "lists");
+
+            migrationBuilder.DropTable(
+                name: "Sets");
 
             migrationBuilder.DropTable(
                 name: "listtypes");

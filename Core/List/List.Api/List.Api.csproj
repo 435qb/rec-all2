@@ -17,7 +17,6 @@
 
     <ItemGroup>
       <Folder Include="Application\IntegrationEvents" />
-      <Folder Include="Application\Queries" />
       <Folder Include="Infrastructure\Filters" />
       <Folder Include="Infrastructure\Migrations\List" />
     </ItemGroup>
@@ -28,6 +27,7 @@
       <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.5" />
       <PackageReference Include="AspNetCore.HealthChecks.Uris" Version="6.0.3" />
       <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+      <PackageReference Include="Dapper" Version="2.0.123" />
       <PackageReference Include="FluentValidation" Version="11.5.1" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4">
