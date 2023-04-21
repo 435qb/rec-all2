@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Net;
 using System.Reflection;
 using Autofac;
@@ -8,13 +9,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using RabbitMQ.Client;
 using RecAll.Core.List.Api;
+using RecAll.Core.List.Api.Application.IntegrationEvents;
 using RecAll.Core.List.Api.Infrastructure;
 using RecAll.Core.List.Api.Infrastructure.AutofacModules;
 using RecAll.Core.List.Api.Infrastructure.Services;
 using RecAll.Core.List.Infrastructure;
 using RecAll.Infrastructure;
 using RecAll.Infrastructure.Api;
+using RecAll.Infrastructure.Api.HttpClient;
+using RecAll.Infrastructure.EventBus;
+using RecAll.Infrastructure.EventBus.Abstractions;
+using RecAll.Infrastructure.EventBus.RabbitMQ;
+using RecAll.Infrastructure.IntegrationEventLog;
+using RecAll.Infrastructure.IntegrationEventLog.Services;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,7 +40,7 @@ try {
                 listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
             });
     });
-    
+
     builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
     builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder => {
         containerBuilder.RegisterModule(new MediatorModule());
@@ -50,8 +59,54 @@ try {
                     TimeSpan.FromSeconds(30), null);
             });
     });
-    
+
+    builder.Services.AddDbContext<IntegrationEventLogContext>(options => {
+        options.UseSqlServer(builder.Configuration["ListContext"],
+            sqlServerOptionsAction => {
+                sqlServerOptionsAction.MigrationsAssembly(
+                    typeof(InitialFunctions).GetTypeInfo().Assembly.GetName()
+                        .Name);
+                sqlServerOptionsAction.EnableRetryOnFailure(15,
+                    TimeSpan.FromSeconds(30), null);
+            });
+    });
+
+    builder.Services.AddHttpClient(HttpClientFactoryExtension.DefaultClient);
     builder.Services.AddTransient<IIdentityService, MockIdentityService>();
+    builder.Services
+        .AddTransient<Func<DbConnection, IIntegrationEventLogService>>(_ =>
+            connection => new IntegrationEventLogService(connection));
+    builder.Services
+        .AddTransient<IListIntegrationEventService,
+            ListIntegrationEventService>();
+
+    builder.Services.AddSingleton<IRabbitMQConnection>(serviceProvider => {
+        var logger = serviceProvider
+            .GetRequiredService<ILogger<RabbitMQConnection>>();
+
+        var factory = new ConnectionFactory {
+            HostName = builder.Configuration["RabbitMQ"],
+            DispatchConsumersAsync = true
+        };
+
+        if (!string.IsNullOrWhiteSpace(
+                builder.Configuration["RabbitMQUserName"])) {
+            factory.UserName = builder.Configuration["RabbitMQUserName"];
+        }
+
+        if (!string.IsNullOrWhiteSpace(
+                builder.Configuration["RabbitMQPassword"])) {
+            factory.Password = builder.Configuration["RabbitMQPassword"];
+        }
+
+        var retryCount =
+            string.IsNullOrWhiteSpace(
+                builder.Configuration["RabbitMQRetryCount"])
+                ? 5
+                : int.Parse(builder.Configuration["RabbitMQRetryCount"]);
+
+        return new RabbitMQConnection(factory, logger, retryCount);
+    });
 
     builder.Services.AddCors(options => {
         options.AddPolicy("CorsPolicy",
@@ -73,23 +128,38 @@ try {
                 .ToServiceResultViewModel());
     });
 
+    builder.Services
+        .AddSingleton<IEventBusSubscriptionsManager,
+            InMemoryEventBusSubscriptionsManager>();
+    builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>(
+        serviceProvider => new RabbitMQEventBus(
+            serviceProvider.GetRequiredService<IRabbitMQConnection>(),
+            serviceProvider.GetRequiredService<ILogger<RabbitMQEventBus>>(),
+            serviceProvider.GetRequiredService<ILifetimeScope>(),
+            serviceProvider.GetRequiredService<IEventBusSubscriptionsManager>(),
+            builder.Configuration["EventBusSubscriptionClientName"],
+            string.IsNullOrWhiteSpace(
+                builder.Configuration["EventBusRetryCount"])
+                ? 5
+                : int.Parse(builder.Configuration["EventBusRetryCount"])));
+
     builder.Services.AddHealthChecks()
         .AddCheck("self", () => HealthCheckResult.Healthy()).AddSqlServer(
             builder.Configuration["ListContext"], name: "ListDb-check",
             tags: new[] { "ListDb" });
-    
+
     var app = builder.Build();
-    
+
     if (app.Environment.IsDevelopment()) {
         app.UseSwagger();
         app.UseSwaggerUI();
     } else {
         app.UseExceptionHandler("/Error");
     }
-    
+
     app.UseCors("CorsPolicy");
     app.UseRouting();
-    
+
     app.UseEndpoints(endpoints => {
         endpoints.MapDefaultControllerRoute();
         endpoints.MapControllers();
@@ -103,7 +173,7 @@ try {
                 Predicate = r => r.Name.Contains("self")
             });
     });
-    
+
     InitialFunctions.MigrateDbContext<ListContext>(app.Services,
         builder.Configuration, (context, servicesInside) => {
             var envInside = servicesInside.GetService<IWebHostEnvironment>();
@@ -112,7 +182,9 @@ try {
             new ListContextSeed().SeedAsync(context, envInside, loggerInside)
                 .Wait();
         });
-    
+    InitialFunctions.MigrateDbContext<IntegrationEventLogContext>(app.Services,
+        builder.Configuration, (_, _) => { });
+
     app.Run();
     return 0;
 } catch (Exception e) {
