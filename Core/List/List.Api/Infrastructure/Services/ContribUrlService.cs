@@ -6,9 +6,13 @@ namespace RecAll.Core.List.Api.Infrastructure.Services;
 public class ContribUrlService : IContribUrlService {
     public string GetContribUrl(int listTypeId) {
         string route;
-
-        if (listTypeId == ListType.Text.Id) {
-            route = "text";
+        var type = Enumeration.GetAll<ListType>().SingleOrDefault(p => listTypeId == p.Id);
+        if (type != null){
+            route = type.Name;
+        // if (listTypeId == ListType.Text.Id) {
+        //     route = "text";
+        // } else if (listTypeId == ListType.MaskedText.Id){
+        //     route = "maskedtext";
         } else {
             throw new ArgumentOutOfRangeException(nameof(listTypeId),
                 $"有效取值为{string.Join(",", Enumeration.GetAll<ListType>().Select(p => p.Id.ToString()))}");
