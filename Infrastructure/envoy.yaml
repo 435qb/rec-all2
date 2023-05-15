@@ -40,6 +40,14 @@ static_resources:
                             auto_host_rewrite: true
                             prefix_rewrite: "/."
                             cluster: recall-maskedtextlist.api
+                        - name: "listapi"
+                          match:
+                            prefix: "/listapi"
+                          route:
+                            timeout: 120s
+                            auto_host_rewrite: true
+                            prefix_rewrite: "/."
+                            cluster: recall-list.api
                 http_filters:
                   - name: envoy.router
                 access_log:
@@ -76,4 +84,12 @@ static_resources:
       hosts:
         - socket_address:
             address: recall-maskedtextlist.api
+            port_value: 80
+    - name: recall-list.api
+      connect_timeout: 0.25s
+      type: strict_dns
+      lb_policy: round_robin
+      hosts:
+        - socket_address:
+            address: recall-list.api
             port_value: 80

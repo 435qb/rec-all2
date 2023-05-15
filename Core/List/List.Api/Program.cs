@@ -117,7 +117,10 @@ try {
     builder.Services.AddControllers().AddJsonOptions(options =>
         options.JsonSerializerOptions.IncludeFields = true);
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen( c =>
+    {
+        c.EnableAnnotations();
+    });
 
     builder.Services.AddOptions().Configure<ApiBehaviorOptions>(options => {
         options.InvalidModelStateResponseFactory = context =>

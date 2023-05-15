@@ -19,7 +19,7 @@ public class ItemIdAssignedIntegrationEventHandler :
     }
 
     public async Task Handle(ItemIdAssignedIntegrationEvent @event) {
-        if (!ListType.Contains(@event.TypeId)) {
+        if (@event.TypeId != ListType.MaskedText.Id) {
             return;
         }
 
