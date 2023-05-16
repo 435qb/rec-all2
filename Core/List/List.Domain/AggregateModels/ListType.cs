@@ -29,6 +29,4 @@ public class ListType : Enumeration {
         throw new ListDomainException(
             $"Possible values for {nameof(ListType)}: {string.Join(",", List().Select(p => p.Name))}");
 
-    public static bool Contains(int id) =>
-        List().Any(p => p.Id == id);
 }
