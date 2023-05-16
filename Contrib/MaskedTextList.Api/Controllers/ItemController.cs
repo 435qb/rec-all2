@@ -28,54 +28,54 @@ public class ItemController {
     [Route("create")]
     [HttpPost]
     public async Task<ActionResult<ServiceResultViewModel<string>>> CreateAsync(
-        [FromBody] CreateTextItemCommand command) {
+        [FromBody] CreateMaskedTextItemCommand command) {
         _logger.LogInformation(
             "----- Handling command {CommandName} ({@Command})",
             command.GetType().Name, command);
 
-        var textItem = new TextItem {
+        var maskedTextItem = new MaskedTextItem {
             Content = command.Content,
             UserIdentityGuid = _identityService.GetUserIdentityGuid(),
             IsDeleted = false,
             MaskedContent = command.MaskedContent,
             IsHidden = false
         };
-        var textItemEntity = _MaskedTextListContext.Add(textItem);
+        var maskedTextItemEntity = _MaskedTextListContext.Add(maskedTextItem);
         await _MaskedTextListContext.SaveChangesAsync();
 
         _logger.LogInformation("----- Command {CommandName} handled",
             command.GetType().Name);
 
         return ServiceResult<string>
-            .CreateSucceededResult(textItemEntity.Entity.Id.ToString())
+            .CreateSucceededResult(maskedTextItemEntity.Entity.Id.ToString())
             .ToServiceResultViewModel();
     }
 
     [Route("update")]
     [HttpPost]
     public async Task<ActionResult<ServiceResultViewModel>> UpdateAsync(
-        [FromBody] UpdateTextItemCommand command) {
+        [FromBody] UpdateMaskedTextItemCommand command) {
         _logger.LogInformation(
             "----- Handling command {CommandName} ({@Command})",
             command.GetType().Name, command);
 
         var userIdentityGuid = _identityService.GetUserIdentityGuid();
 
-        var textItem = await _MaskedTextListContext.TextItems.FirstOrDefaultAsync(p =>
+        var maskedTextItem = await _MaskedTextListContext.MaskedTextItems.FirstOrDefaultAsync(p =>
             p.Id == command.Id && p.UserIdentityGuid == userIdentityGuid &&
             !p.IsDeleted);
 
-        if (textItem is null) {
+        if (maskedTextItem is null) {
             _logger.LogWarning(
-                $"用户{userIdentityGuid}尝试查看已删除、不存在或不属于自己的TextItem {command.Id}");
+                $"用户{userIdentityGuid}尝试查看已删除、不存在或不属于自己的MaskedTextItem {command.Id}");
 
             return ServiceResult
-                .CreateFailedResult($"Unknown TextItem id: {command.Id}")
+                .CreateFailedResult($"Unknown MaskedTextItem id: {command.Id}")
                 .ToServiceResultViewModel();
         }
 
-        textItem.Content = command.Content;
-        textItem.MaskedContent = command.MaskedContent;
+        maskedTextItem.Content = command.Content;
+        maskedTextItem.MaskedContent = command.MaskedContent;
 
         await _MaskedTextListContext.SaveChangesAsync();
 
@@ -95,20 +95,20 @@ public class ItemController {
 
         var userIdentityGuid = _identityService.GetUserIdentityGuid();
 
-        var textItem = await _MaskedTextListContext.TextItems.FirstOrDefaultAsync(p =>
+        var maskedTextItem = await _MaskedTextListContext.MaskedTextItems.FirstOrDefaultAsync(p =>
             p.Id == command.Id && p.UserIdentityGuid == userIdentityGuid &&
             !p.IsDeleted);
 
-        if (textItem is null) {
+        if (maskedTextItem is null) {
             _logger.LogWarning(
-                $"用户{userIdentityGuid}尝试查看已删除、不存在或不属于自己的TextItem {command.Id}");
+                $"用户{userIdentityGuid}尝试查看已删除、不存在或不属于自己的MaskedTextItem {command.Id}");
 
             return ServiceResult
-                .CreateFailedResult($"Unknown TextItem id: {command.Id}")
+                .CreateFailedResult($"Unknown MaskedTextItem id: {command.Id}")
                 .ToServiceResultViewModel();
         }
 
-        textItem.IsHidden = !textItem.IsHidden;
+        maskedTextItem.IsHidden = !maskedTextItem.IsHidden;
         await _MaskedTextListContext.SaveChangesAsync();
 
         _logger.LogInformation("----- Command {CommandName} handled",
@@ -118,65 +118,65 @@ public class ItemController {
     }
     [Route("get/{id}")]
     [HttpGet]
-    public async Task<ActionResult<ServiceResultViewModel<TextItemViewModel>>>
+    public async Task<ActionResult<ServiceResultViewModel<MaskedTextItemViewModel>>>
         GetAsync(int id) {
         var userIdentityGuid = _identityService.GetUserIdentityGuid();
 
-        var textItem = await _MaskedTextListContext.TextItems.FirstOrDefaultAsync(p =>
+        var maskedTextItem = await _MaskedTextListContext.MaskedTextItems.FirstOrDefaultAsync(p =>
             p.Id == id && p.UserIdentityGuid == userIdentityGuid &&
             !p.IsDeleted);
 
-        if (textItem is null) {
+        if (maskedTextItem is null) {
             _logger.LogWarning(
-                $"用户{userIdentityGuid}尝试查看已删除、不存在或不属于自己的TextItem {id}");
+                $"用户{userIdentityGuid}尝试查看已删除、不存在或不属于自己的MaskedTextItem {id}");
 
-            return ServiceResult<TextItemViewModel>
-                .CreateFailedResult($"Unknown TextItem id: {id}")
+            return ServiceResult<MaskedTextItemViewModel>
+                .CreateFailedResult($"Unknown MaskedTextItem id: {id}")
                 .ToServiceResultViewModel();
         }
 
-        return textItem is null
-            ? ServiceResult<TextItemViewModel>
-                .CreateFailedResult($"Unknown TextItem id: {id}")
+        return maskedTextItem is null
+            ? ServiceResult<MaskedTextItemViewModel>
+                .CreateFailedResult($"Unknown MaskedTextItem id: {id}")
                 .ToServiceResultViewModel()
-            : ServiceResult<TextItemViewModel>
-                .CreateSucceededResult(new TextItemViewModel {
-                    Id = textItem.Id,
-                    ItemId = textItem.ItemId,
-                    Content = textItem.Content,
-                    MaskedContent = textItem.IsHidden ? TextItem.MaskedString : textItem.MaskedContent
+            : ServiceResult<MaskedTextItemViewModel>
+                .CreateSucceededResult(new MaskedTextItemViewModel {
+                    Id = maskedTextItem.Id,
+                    ItemId = maskedTextItem.ItemId,
+                    Content = maskedTextItem.Content,
+                    MaskedContent = maskedTextItem.IsHidden ? MaskedTextItem.MaskedString : maskedTextItem.MaskedContent
                 }).ToServiceResultViewModel();
     }
 
     [Route("getByItemId/{itemId}")]
     [HttpGet]
-    public async Task<ActionResult<ServiceResultViewModel<TextItemViewModel>>>
+    public async Task<ActionResult<ServiceResultViewModel<MaskedTextItemViewModel>>>
         GetByItemId(int itemId) {
         var userIdentityGuid = _identityService.GetUserIdentityGuid();
 
-        var textItem = await _MaskedTextListContext.TextItems.FirstOrDefaultAsync(p =>
+        var maskedTextItem = await _MaskedTextListContext.MaskedTextItems.FirstOrDefaultAsync(p =>
             p.ItemId == itemId && p.UserIdentityGuid == userIdentityGuid &&
             !p.IsDeleted);
 
-        if (textItem is null) {
+        if (maskedTextItem is null) {
             _logger.LogWarning(
-                $"用户{userIdentityGuid}尝试查看已删除、不存在或不属于自己的TextItem, ItemID: {itemId}");
+                $"用户{userIdentityGuid}尝试查看已删除、不存在或不属于自己的MaskedTextItem, ItemID: {itemId}");
 
-            return ServiceResult<TextItemViewModel>
-                .CreateFailedResult($"Unknown TextItem with ItemID: {itemId}")
+            return ServiceResult<MaskedTextItemViewModel>
+                .CreateFailedResult($"Unknown MaskedTextItem with ItemID: {itemId}")
                 .ToServiceResultViewModel();
         }
 
-        return textItem is null
-            ? ServiceResult<TextItemViewModel>
-                .CreateFailedResult($"Unknown TextItem with ItemID: {itemId}")
+        return maskedTextItem is null
+            ? ServiceResult<MaskedTextItemViewModel>
+                .CreateFailedResult($"Unknown MaskedTextItem with ItemID: {itemId}")
                 .ToServiceResultViewModel()
-            : ServiceResult<TextItemViewModel>
-                .CreateSucceededResult(new TextItemViewModel {
-                    Id = textItem.Id,
-                    ItemId = textItem.ItemId,
-                    Content = textItem.Content,
-                    MaskedContent = textItem.IsHidden ? TextItem.MaskedString : textItem.MaskedContent
+            : ServiceResult<MaskedTextItemViewModel>
+                .CreateSucceededResult(new MaskedTextItemViewModel {
+                    Id = maskedTextItem.Id,
+                    ItemId = maskedTextItem.ItemId,
+                    Content = maskedTextItem.Content,
+                    MaskedContent = maskedTextItem.IsHidden ? MaskedTextItem.MaskedString : maskedTextItem.MaskedContent
                 }).ToServiceResultViewModel();
     }
 
@@ -184,35 +184,35 @@ public class ItemController {
     [HttpPost]
     public async
         Task<ActionResult<
-            ServiceResultViewModel<IEnumerable<TextItemViewModel>>>>
+            ServiceResultViewModel<IEnumerable<MaskedTextItemViewModel>>>>
         GetItemsAsync(GetItemsCommand command) {
         var itemIds = command.Ids.ToList();
         var userIdentityGuid = _identityService.GetUserIdentityGuid();
 
-        var textItems = await _MaskedTextListContext.TextItems.Where(p =>
+        var maskedTextItems = await _MaskedTextListContext.MaskedTextItems.Where(p =>
                 p.ItemId.HasValue && itemIds.Contains(p.ItemId.Value) &&
                 p.UserIdentityGuid == userIdentityGuid && !p.IsDeleted)
             .ToListAsync();
 
-        if (textItems.Count != itemIds.Count) {
+        if (maskedTextItems.Count != itemIds.Count) {
             var missingIds = string.Join(",",
-                itemIds.Except(textItems.Select(p => p.ItemId.Value))
+                itemIds.Except(maskedTextItems.Select(p => p.ItemId.Value))
                     .Select(p => p.ToString()));
 
             _logger.LogWarning(
-                $"用户{userIdentityGuid}尝试查看已删除、不存在或不属于自己的TextItem {missingIds}");
+                $"用户{userIdentityGuid}尝试查看已删除、不存在或不属于自己的MaskedTextItem {missingIds}");
 
-            return ServiceResult<IEnumerable<TextItemViewModel>>
+            return ServiceResult<IEnumerable<MaskedTextItemViewModel>>
                 .CreateFailedResult($"Unknown Item id: {missingIds}")
                 .ToServiceResultViewModel();
         }
 
-        textItems.Sort((x, y) =>
+        maskedTextItems.Sort((x, y) =>
             itemIds.IndexOf(x.ItemId.Value) - itemIds.IndexOf(y.ItemId.Value));
 
-        return ServiceResult<IEnumerable<TextItemViewModel>>
-            .CreateSucceededResult(textItems.Select(p => new TextItemViewModel {
-                Id = p.Id, ItemId = p.ItemId, Content = p.Content, MaskedContent = p.IsHidden ? TextItem.MaskedString : p.MaskedContent
+        return ServiceResult<IEnumerable<MaskedTextItemViewModel>>
+            .CreateSucceededResult(maskedTextItems.Select(p => new MaskedTextItemViewModel {
+                Id = p.Id, ItemId = p.ItemId, Content = p.Content, MaskedContent = p.IsHidden ? MaskedTextItem.MaskedString : p.MaskedContent
             })).ToServiceResultViewModel();
     }
 }

@@ -25,7 +25,7 @@ namespace RecAll.Contrib.MaskedTextList.Api.Migrations
             modelBuilder.HasSequence("textitemseq", "MaskedTextList")
                 .IncrementsBy(10);
 
-            modelBuilder.Entity("RecAll.Contrib.MaskedTextList.Api.Models.TextItem", b =>
+            modelBuilder.Entity("RecAll.Contrib.MaskedTextList.Api.Models.MaskedTextItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

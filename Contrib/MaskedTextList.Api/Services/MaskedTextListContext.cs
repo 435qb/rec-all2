@@ -8,18 +8,18 @@ namespace RecAll.Contrib.MaskedTextList.Api.Services;
 public class MaskedTextListContext : DbContext {
     public const string DefaultSchema = "MaskedTextList";
 
-    public DbSet<TextItem> TextItems { get; set; }
+    public DbSet<MaskedTextItem> MaskedTextItems { get; set; }
 
     public MaskedTextListContext(DbContextOptions<MaskedTextListContext> options) :
         base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
-        modelBuilder.ApplyConfiguration(new TextItemConfiguration());
+        modelBuilder.ApplyConfiguration(new MaskedTextItemConfiguration());
     }
 }
 
-public class TextItemConfiguration : IEntityTypeConfiguration<TextItem> {
-    public void Configure(EntityTypeBuilder<TextItem> builder) {
+public class MaskedTextItemConfiguration : IEntityTypeConfiguration<MaskedTextItem> {
+    public void Configure(EntityTypeBuilder<MaskedTextItem> builder) {
         builder.ToTable("textitems");
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id)

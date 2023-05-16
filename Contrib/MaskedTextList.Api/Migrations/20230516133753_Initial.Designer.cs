@@ -12,8 +12,8 @@ using RecAll.Contrib.MaskedTextList.Api.Services;
 namespace RecAll.Contrib.MaskedTextList.Api.Migrations
 {
     [DbContext(typeof(MaskedTextListContext))]
-    [Migration("20230509072503_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20230516133753_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,7 +28,7 @@ namespace RecAll.Contrib.MaskedTextList.Api.Migrations
             modelBuilder.HasSequence("textitemseq", "MaskedTextList")
                 .IncrementsBy(10);
 
-            modelBuilder.Entity("RecAll.Contrib.MaskedTextList.Api.Models.TextItem", b =>
+            modelBuilder.Entity("RecAll.Contrib.MaskedTextList.Api.Models.MaskedTextItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -43,8 +43,15 @@ namespace RecAll.Contrib.MaskedTextList.Api.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("bit");
+
                     b.Property<int?>("ItemId")
                         .HasColumnType("int");
+
+                    b.Property<string>("MaskedContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserIdentityGuid")
                         .IsRequired()

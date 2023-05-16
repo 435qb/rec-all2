@@ -1,6 +1,6 @@
 namespace RecAll.Contrib.MaskedTextList.Api.ViewModels; 
 
-public class TextItemViewModel {
+public class MaskedTextItemViewModel {
     public int Id { get; set; }
 
     public int? ItemId { get; set; }

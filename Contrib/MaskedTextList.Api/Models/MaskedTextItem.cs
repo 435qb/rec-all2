@@ -1,6 +1,6 @@
 ﻿namespace RecAll.Contrib.MaskedTextList.Api.Models;
 
-public class TextItem
+public class MaskedTextItem
 {
     public static string MaskedString = "内容已隐藏";
     

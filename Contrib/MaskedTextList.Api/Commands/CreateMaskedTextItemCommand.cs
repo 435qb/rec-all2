@@ -2,7 +2,7 @@
 
 namespace RecAll.Contrib.MaskedTextList.Api.Commands;
 
-public class CreateTextItemCommand {
+public class CreateMaskedTextItemCommand {
     [Required]
     public string Content { get; set; }
     [Required]

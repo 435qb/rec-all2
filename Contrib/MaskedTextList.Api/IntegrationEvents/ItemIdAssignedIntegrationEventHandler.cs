@@ -27,15 +27,15 @@ public class ItemIdAssignedIntegrationEventHandler :
             "----- Handling integration event: {IntegrationEventId} at {AppName} - ({@IntegrationEvent})",
             @event.Id, InitialFunctions.AppName, @event);
 
-        var textItem = await _MaskedTextListContext.TextItems.FirstOrDefaultAsync(p =>
+        var maskedTextItem = await _MaskedTextListContext.MaskedTextItems.FirstOrDefaultAsync(p =>
             p.Id == int.Parse(@event.ContribId));
 
-        if (textItem is null) {
-            _logger.LogWarning("Unknown TextItem id: {ItemId}", @event.ItemId);
+        if (maskedTextItem is null) {
+            _logger.LogWarning("Unknown MaskedTextItem id: {ItemId}", @event.ItemId);
             return;
         }
 
-        textItem.ItemId = @event.ItemId;
+        maskedTextItem.ItemId = @event.ItemId;
         await _MaskedTextListContext.SaveChangesAsync();
 
         _logger.LogInformation(
