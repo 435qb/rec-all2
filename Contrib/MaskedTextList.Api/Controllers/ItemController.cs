@@ -140,12 +140,7 @@ public class ItemController {
                 .CreateFailedResult($"Unknown MaskedTextItem id: {id}")
                 .ToServiceResultViewModel()
             : ServiceResult<MaskedTextItemViewModel>
-                .CreateSucceededResult(new MaskedTextItemViewModel {
-                    Id = maskedTextItem.Id,
-                    ItemId = maskedTextItem.ItemId,
-                    Content = maskedTextItem.Content,
-                    MaskedContent = maskedTextItem.IsHidden ? MaskedTextItem.MaskedString : maskedTextItem.MaskedContent
-                }).ToServiceResultViewModel();
+                .CreateSucceededResult(MappingModel(maskedTextItem)).ToServiceResultViewModel();
     }
 
     [Route("getByItemId/{itemId}")]
@@ -172,12 +167,7 @@ public class ItemController {
                 .CreateFailedResult($"Unknown MaskedTextItem with ItemID: {itemId}")
                 .ToServiceResultViewModel()
             : ServiceResult<MaskedTextItemViewModel>
-                .CreateSucceededResult(new MaskedTextItemViewModel {
-                    Id = maskedTextItem.Id,
-                    ItemId = maskedTextItem.ItemId,
-                    Content = maskedTextItem.Content,
-                    MaskedContent = maskedTextItem.IsHidden ? MaskedTextItem.MaskedString : maskedTextItem.MaskedContent
-                }).ToServiceResultViewModel();
+                .CreateSucceededResult(MappingModel(maskedTextItem)).ToServiceResultViewModel();
     }
 
     [Route("getItems")]
@@ -211,8 +201,13 @@ public class ItemController {
             itemIds.IndexOf(x.ItemId.Value) - itemIds.IndexOf(y.ItemId.Value));
 
         return ServiceResult<IEnumerable<MaskedTextItemViewModel>>
-            .CreateSucceededResult(maskedTextItems.Select(p => new MaskedTextItemViewModel {
-                Id = p.Id, ItemId = p.ItemId, Content = p.Content, MaskedContent = p.IsHidden ? MaskedTextItem.MaskedString : p.MaskedContent
-            })).ToServiceResultViewModel();
+            .CreateSucceededResult(maskedTextItems.Select(MappingModel)).ToServiceResultViewModel();
+    }
+    
+    private static MaskedTextItemViewModel MappingModel(MaskedTextItem p){
+        return new MaskedTextItemViewModel{
+            Id = p.Id, ItemId = p.ItemId, Content = p.Content,
+            MaskedContent = p.IsHidden ? MaskedTextItem.MaskedString : p.MaskedContent
+        };
     }
 }
